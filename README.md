@@ -94,14 +94,14 @@ The game validates the configuration before starting. If the settings are invali
 
 ```
 src/
-������ App.svelte            # Root component - manages game state and board reset
-������ main.ts               # Application entry point
-������ app.css               # Global styles and game-specific CSS
-������ lib/
-��   ������ minesweeper.ts    # Pure game logic (board creation, mine placement, reveal, flagging)
-������ components/
-    ������ Board.svelte      # Board grid - handles click initialization and delegates events
-    ������ Tile.svelte       # Individual tile - renders revealed / flagged / mine states
+├── App.svelte            # Root component - manages game state and board reset
+├── main.ts               # Application entry point
+├── app.css               # Global styles and game-specific CSS
+├── lib/
+│   └── minesweeper.ts    # Pure game logic (board creation, mine placement, reveal, flagging)
+└── components/
+    ├── Board.svelte      # Board grid - handles click initialization and delegates events
+    └── Tile.svelte       # Individual tile - renders revealed / flagged / mine states
 ```
 
 ## License
