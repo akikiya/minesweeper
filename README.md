@@ -1,18 +1,19 @@
 # Minesweeper
 
-A browser-based Minesweeper game built with Svelte 5, TypeScript, and Vite. Classic 9×9 beginner gameplay with a safe first click, flagging, and responsive styling.
+A browser-based Minesweeper game built with Svelte 5, TypeScript, and Vite.
+Customizable board, classic 9x9 beginner gameplay, safe first click, flagging, and responsive styling.
 
 ## Features
 
-- **9×9 board** with 10 mines — classic beginner difficulty
-- **Safe first click** — mines are placed after your first reveal so you never start on a mine
-- **Cascade reveal** — empty tiles automatically expand to show adjacent safe cells
-- **Flagging** — right-click (or long-press) tiles to mark suspected mines
-- **Win / lose detection** — game ends when you hit a mine or clear all safe tiles
-- **Remaining mine counter** — tracks flags placed versus total mines
-- **Responsive design** — adapts to mobile and desktop viewports
-- **Light / dark mode** — respects system color-scheme preference
-- **Accessibility** — keyboard navigation, focus indicators, and reduced-motion support
+- **Configurable board** -- customize rows, columns, and mine count (1-30 each) before starting a new game
+- **Safe first click** -- mines are placed after your first reveal so you never start on a mine
+- **Cascade reveal** -- empty tiles automatically expand to show adjacent safe cells
+- **Flagging** -- right-click (or long-press) tiles to mark suspected mines
+- **Win / lose detection** -- game ends when you hit a mine or clear all safe tiles
+- **Remaining mine counter** -- tracks flags placed versus total mines
+- **Responsive design** -- adapts to mobile and desktop viewports
+- **Light / dark mode** -- respects system color-scheme preference
+- **Accessibility** -- keyboard navigation, focus indicators, and reduced-motion support
 
 ## Tech Stack
 
@@ -77,18 +78,30 @@ Runs `svelte-check` and `tsc` to validate types across the project.
 5. Clear all non-mine tiles to win.
 6. Click **New Game** to reset the board at any time.
 
+## Configuration
+
+Before starting a new game, you can customize the board dimensions and mine count using the controls at the top of the screen:
+
+| Setting | Description |
+|---------|-------------|
+| **Rows** | Number of rows (1-30) |
+| **Cols** | Number of columns (1-30) |
+| **Mines** | Number of mines (must be less than rows x cols) |
+
+The game validates the configuration before starting. If the settings are invalid (e.g., too many mines), error messages are displayed below the inputs.
+
 ## Project Structure
 
 ```
 src/
-├── App.svelte            # Root component — manages game state and board reset
-├── main.ts               # Application entry point
-├── app.css               # Global styles and game-specific CSS
-├── lib/
-│   └── minesweeper.ts    # Pure game logic (board creation, mine placement, reveal, flagging)
-└── components/
-    ├── Board.svelte      # Board grid — handles click initialization and delegates events
-    └── Tile.svelte       # Individual tile — renders revealed / flagged / mine states
+������ App.svelte            # Root component - manages game state and board reset
+������ main.ts               # Application entry point
+������ app.css               # Global styles and game-specific CSS
+������ lib/
+��   ������ minesweeper.ts    # Pure game logic (board creation, mine placement, reveal, flagging)
+������ components/
+    ������ Board.svelte      # Board grid - handles click initialization and delegates events
+    ������ Tile.svelte       # Individual tile - renders revealed / flagged / mine states
 ```
 
 ## License

@@ -71,13 +71,11 @@
     }
 </script>
 
-<section id="board">
+<section id="board" style="--cols: {board.length > 0 ? board[0].length : 9}">
     {#each board as row, r}
         {#each row as tile, c}
             <Tile
                 {tile}
-                {r}
-                {c}
                 {gameState}
                 onclick={() => handleClick(r, c)}
                 onflag={() => handleRightClick(r, c)}
@@ -85,3 +83,17 @@
         {/each}
     {/each}
 </section>
+
+<style>
+    #board {
+        display: grid;
+        grid-template-columns: repeat(var(--cols), 1fr);
+        gap: 2px;
+        background: var(--border);
+        border-radius: 10px;
+        padding: 3px;
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.06),
+            0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+</style>
