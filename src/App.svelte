@@ -21,21 +21,67 @@
         getRemainingMines,
     } from "./lib/minesweeper/board";
     import { validateBoardConfig } from "./lib/minesweeper/config";
+    import { computeStats, calculateScore, getDifficulty, type ScoreResult } from "./lib/minesweeper/scoring";
     import type { GameState, BoardConfig } from "./lib/minesweeper/types";
 
     let config = $state<BoardConfig>({ rows: 9, cols: 9, mineCount: 10 });
     let board = $state(createEmptyBoard(9, 9));
     let gameState = $state<GameState>('playing');
     let errors = $state<string[]>([]);
+    /** Elapsed seconds since the current game started, updated every second while playing. */
+    let elapsed = $state(0);
+    /** Cached score result from the most recently finished game, or `null` during active play. */
+    let lastScore = $state<ScoreResult | null>(null);
+    /** Unix timestamp captured when the game transitions to `'playing'`. */
+    let startTime = $state(0);
+    /** Number of left-clicks performed by the player in the current game. */
+    let clickCount = $state(0);
 
     const remainingMines = $derived(getRemainingMines(board));
 
+    /**
+     * Starts a wall-clock timer while the game is active and clears it
+     * on game over or reset. The timer drives the elapsed-time display
+     * and is included in score calculation.
+     */
+    $effect(() => {
+        if (gameState === 'playing') {
+            startTime = Date.now();
+            const id = setInterval(() => {
+                elapsed = Math.floor((Date.now() - startTime) / 1000);
+            }, 1000);
+            return () => clearInterval(id);
+        }
+    });
+
+    /**
+     * Handles a left-click on a tile.
+     *
+     * Increments the player's click count and delegates to
+     * `revealTile`. On the first click, `Board.svelte` initializes
+     * the board with mines (excluding the clicked cell so the first
+     * click is always safe).
+     *
+     * When the game ends (`'won'` or `'lost'`), gameplay statistics
+     * are computed from the final board state *before* all mines are
+     * revealed, so that only player-caused reveals are counted toward
+     * the score. The elapsed time and click count are included in the
+     * final score calculation.
+     *
+     * @param r - Row index of the clicked tile
+     * @param c - Column index of the clicked tile
+     */
     function handleReveal(r: number, c: number): GameState {
+        clickCount++;
         const state = revealTile(board, r, c);
         if (state === 'lost') {
+            const stats = computeStats(board, elapsed, clickCount);
+            lastScore = calculateScore(stats, getDifficulty(config));
             gameState = 'lost';
             revealAllMines(board);
         } else if (state === 'won') {
+            const stats = computeStats(board, elapsed, clickCount);
+            lastScore = calculateScore(stats, getDifficulty(config));
             gameState = 'won';
             revealAllMines(board);
         }
@@ -46,6 +92,14 @@
         toggleFlag(board, r, c);
     }
 
+    /**
+     * Resets the game with a fresh board and validated configuration.
+     *
+     * Clears the timer, elapsed counter, click count, and cached score
+     * so the next game starts from a clean state. If the current config
+     * is invalid, the errors array is populated and the board is
+     * left unchanged.
+     */
     function reset() {
         const validation = validateBoardConfig(config);
         if (!validation.valid) {
@@ -55,6 +109,9 @@
         errors = [];
         board = createEmptyBoard(config.rows, config.cols);
         gameState = 'playing';
+        elapsed = 0;
+        clickCount = 0;
+        lastScore = null;
     }
 </script>
 
@@ -86,6 +143,11 @@
 
     <div id="status">
         <span id="mines">{remainingMines}</span>
+        {#if gameState === 'won' && lastScore}
+            <span id="score" title="Score breakdown">
+                {lastScore.score} pts
+            </span>
+        {/if}
         {#if gameState === 'won'}
             <span id="result" data-state="won">You Win!</span>
         {:else if gameState === 'lost'}
@@ -214,6 +276,13 @@
         color: var(--accent);
         min-width: 36px;
         text-align: center;
+    }
+
+    #score {
+        color: var(--text);
+        font-size: 16px;
+        cursor: help;
+        position: relative;
     }
 
     #result {
