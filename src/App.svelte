@@ -15,14 +15,13 @@
     import Board from "./components/Board.svelte";
     import {
         createEmptyBoard,
-        type GameState,
-        type BoardConfig,
-        validateBoardConfig,
         revealTile,
         toggleFlag,
         revealAllMines,
         getRemainingMines,
-    } from "./lib/minesweeper";
+    } from "./lib/minesweeper/board";
+    import { validateBoardConfig } from "./lib/minesweeper/config";
+    import type { GameState, BoardConfig } from "./lib/minesweeper/types";
 
     let config = $state<BoardConfig>({ rows: 9, cols: 9, mineCount: 10 });
     let board = $state(createEmptyBoard(9, 9));

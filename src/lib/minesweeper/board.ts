@@ -1,39 +1,38 @@
-/**
- * Core Minesweeper game logic module.
- *
- * Provides functions for board creation, mine initialization (with
- * safe-first-click exclusion), tile revealing via BFS flood-fill,
- * flag toggling, win/loss detection, and mine-counter derivation.
- *
- * @module minesweeper
- */
+import type { Board, GameState, Tile } from './types';
+
+/** Offsets for the 8 neighboring cells (row-delta, col-delta). */
+const DIRS = [
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1],
+];
 
 /**
- * Represents the three possible states of a Minesweeper game.
- * - `'playing'` — the game is active and awaiting player input
- * - `'won'` — all non-mine tiles have been revealed
- * - `'lost'` — a mine tile was revealed
- */
-export type GameState = 'playing' | 'won' | 'lost';
-
-/**
- * A single tile on the Minesweeper board.
+ * Counts how many of the 8 neighboring cells contain a mine.
  *
- * @property isMine — whether this tile hides a mine
- * @property adjacentMines — count of mines in the 8 surrounding cells (0–8)
- * @property revealed — whether the tile has been uncovered by the player
- * @property flagged — whether the player has marked this tile with a flag
+ * Uses optional chaining (`board[nr]?.[nc]?.isMine`) so that out-of-bounds
+ * neighbors (edge and corner tiles) are silently skipped rather than
+ * throwing an index error.
+ *
+ * @param board - The board to inspect
+ * @param row - The tile's row index
+ * @param col - The tile's column index
+ * @returns The number of adjacent mines (0–8)
  */
-export type Tile = {
-  isMine: boolean;
-  adjacentMines: number;
-  revealed: boolean;
-  flagged: boolean;
-};
-/**
- * A two-dimensional grid of tiles, indexed as `board[row][col]`.
- */
-export type Board = Tile[][];
+function countAdjacentMines(board: Board, row: number, col: number) {
+  let count = 0;
+  for (const [dr, dc] of DIRS) {
+    const nr = row + dr;
+    const nc = col + dc;
+    if (board[nr]?.[nc]?.isMine) count++;
+  }
+  return count;
+}
 
 /**
  * Creates a blank board filled with unrevealed, unflagged, mine-free tiles.
@@ -107,40 +106,6 @@ export function initializeBoard(
   }
 
   return board;
-}
-
-/** Offsets for the 8 neighboring cells (row-delta, col-delta). */
-const DIRS = [
-  [-1, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, -1],
-  [0, 1],
-  [1, -1],
-  [1, 0],
-  [1, 1],
-];
-
-/**
- * Counts how many of the 8 neighboring cells contain a mine.
- *
- * Uses optional chaining (`board[nr]?.[nc]?.isMine`) so that out-of-bounds
- * neighbors (edge and corner tiles) are silently skipped rather than
- * throwing an index error.
- *
- * @param board - The board to inspect
- * @param row - The tile's row index
- * @param col - The tile's column index
- * @returns The number of adjacent mines (0–8)
- */
-function countAdjacentMines(board: Board, row: number, col: number) {
-  let count = 0;
-  for (const [dr, dc] of DIRS) {
-    const nr = row + dr;
-    const nc = col + dc;
-    if (board[nr]?.[nc]?.isMine) count++;
-  }
-  return count;
 }
 
 /**
@@ -222,65 +187,6 @@ export function checkWin(board: Board): boolean {
   return board.every((row) =>
     row.every((tile) => tile.isMine || tile.revealed),
   );
-}
-
-/**
- * Maximum allowed board dimension (rows or columns).
- */
-const MAX_DIM = 30;
-
-/**
- * Minimum allowed board dimension (rows or columns).
- */
-const MIN_DIM = 1;
-
-/**
- * Configuration for a Minesweeper board.
- *
- * @property rows - Number of rows in the board
- * @property cols - Number of columns in the board
- * @property mineCount - Number of mines to place
- */
-export type BoardConfig = {
-  rows: number;
-  cols: number;
-  mineCount: number;
-};
-
-/**
- * Validates a Minesweeper board configuration.
- *
- * Checks that rows and cols are positive integers within
- * {@link MIN_DIM}–{@link MAX_DIM}, and that mineCount is a
- * non-negative integer that does not exceed `rows * cols - 1`
- * (at least one safe tile must exist for the first click).
- *
- * @param config - The board configuration to validate
- * @returns `{ valid: true }` if the config is valid, or
- *   `{ valid: false, errors: string[] }` with a list of
- *   human-readable error messages otherwise
- */
-export function validateBoardConfig(config: BoardConfig): { valid: true } | { valid: false; errors: string[] } {
-  const errors: string[] = [];
-
-  if (!Number.isInteger(config.rows) || config.rows < MIN_DIM || config.rows > MAX_DIM) {
-    errors.push(`rows must be an integer between ${MIN_DIM} and ${MAX_DIM}`);
-  }
-
-  if (!Number.isInteger(config.cols) || config.cols < MIN_DIM || config.cols > MAX_DIM) {
-    errors.push(`cols must be an integer between ${MIN_DIM} and ${MAX_DIM}`);
-  }
-
-  if (errors.length === 0) {
-    const totalTiles = config.rows * config.cols;
-    if (!Number.isInteger(config.mineCount) || config.mineCount < 0) {
-      errors.push('mineCount must be a non-negative integer');
-    } else if (config.mineCount >= totalTiles) {
-      errors.push(`mineCount must be less than the total number of tiles (${totalTiles})`);
-    }
-  }
-
-  return errors.length === 0 ? { valid: true } : { valid: false, errors };
 }
 
 /**

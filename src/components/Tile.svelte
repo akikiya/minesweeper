@@ -7,7 +7,7 @@
      * content is derived based on reveal state, game state, and
      * whether the tile is a mine.
      */
-    import { type Tile } from "../lib/minesweeper";
+    import type { Tile } from "../lib/minesweeper/types";
 
     interface Props {
         /** The tile data model */

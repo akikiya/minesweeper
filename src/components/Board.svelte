@@ -9,7 +9,8 @@
      * and its immediate neighborhood are guaranteed to be
      * mine-free at the start of the game.
      */
-    import { initializeBoard, type Board, type GameState } from "../lib/minesweeper";
+    import { initializeBoard } from "../lib/minesweeper/board";
+    import type { Board, GameState } from "../lib/minesweeper/types";
     import Tile from "./Tile.svelte";
 
     interface Props {
