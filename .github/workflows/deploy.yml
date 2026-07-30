@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - public/
-      - src/
+      - public/**
+      - src/**
       - index.html
   workflow_dispatch:
 
